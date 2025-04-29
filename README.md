@@ -7,7 +7,7 @@ An RShiny dashboard that compares distinctive terms in open text fields across t
 
 
 *A note on WLO*: <br />
-For this code, a Weighted Log-Odds (WLO) approach is used on tokenized data pulled from an open text field to identify distinctive terms in each period. This measure compares two periods of time by calculating the odds of a term occurring in one period compared to the other, logging this odds ratio, and weighting the result according to its variance using a Bayesian Dirichlet Prior. Ultimately, the resulting WLO is a z-score for the log-odds-ratio of the term comparing a period of interest to a baseline period. 
+For this code, a WLO approach is used on tokenized data pulled from an open text field to identify distinctive terms in each period. This measure compares two periods of time by calculating the odds of a term occurring in one period compared to the other, logging this odds ratio, and weighting the result according to its variance using a Bayesian Dirichlet Prior. Ultimately, the resulting WLO is a z-score for the log-odds-ratio of the term comparing a period of interest to a baseline period. 
 
 **TLDR**: The higher the WLO, the more distinctive the term is to that period compared to the other. 
 
