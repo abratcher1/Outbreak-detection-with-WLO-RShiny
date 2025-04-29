@@ -2,7 +2,9 @@
 An RShiny dashboard that compares distinctive terms in open text fields across two different time periods. 
 
 **Purpose**: To identify outbreaks or other important trends
+
 **Process**: Identification of how the subject matter of open text fields changes from a baseline period to a period of interest
+
 **Method**:  Weighted Log Odds (WLO)
 
 
