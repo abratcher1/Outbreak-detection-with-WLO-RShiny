@@ -1,9 +1,9 @@
 # RShiny-WLO-Anomaly-Detection
 An RShiny dashboard that compares distinctive terms in open text fields across two different time periods. 
 
-Purpose: To identify outbreaks or other important trends 
-Process: Identification of how the subject matter of open text fields changes from a baseline period to a period of interest
-Method:  Weighted Log Odds (WLO)
+**Purpose**: To identify outbreaks or other important trends
+**Process**: Identification of how the subject matter of open text fields changes from a baseline period to a period of interest
+**Method**:  Weighted Log Odds (WLO)
 
 
 A note on WLO:
@@ -15,8 +15,8 @@ To identify distinctive terms in each period, a Weighted Log-Odds (WLO) approach
 ## Code Structure
 The included code contains two major steps:  
 
-  1. Data cleaning and tokenization
-  2. Dashboard creation
+  1. Data cleaning and tokenization (i.e. splitting the text field into separate words) 
+  3. Dashboard creation, including calculating WLO for each token
 
 
 
