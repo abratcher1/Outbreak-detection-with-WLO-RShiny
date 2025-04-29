@@ -6,7 +6,7 @@ An RShiny dashboard that compares distinctive terms in open text fields across t
 **Method**:  Weighted Log Odds (WLO)
 
 
-A note on WLO: <br />
+*A note on WLO*: <br />
 To identify distinctive terms in each period, a Weighted Log-Odds (WLO) approach is used on tokenized data pulled from an open text field. This measure compares two periods of time by calculating the odds of a term occurring in one period compared to the other, logging this odds ratio, and weighting the result according to its variance using a Bayesian Dirichlet Prior. Ultimately, the resulting WLO is a z-score for the log-odds-ratio of the term comparing a period of interest to a baseline period. 
 
 **TLDR**: The higher the WLO, the more distinctive the term is to that period compared to the other. 
@@ -22,6 +22,7 @@ The included code contains two major steps:
 
 ## Example
 The included code is applicable to a dataset on tweets from January 2020 to June 2021 that reference COVID-19 or other related words. <br />
-  Dataset:     "full_dataset.tsv.gz" <br />
-  Location:    https://zenodo.org/records/5090588 <br />
-  Description: https://www.mdpi.com/2673-3986/2/3/24 <br />
+  - Description: [A Large-Scale COVID-19 Twitter Chatter Dataset for Open Scientific Research—An International Collaboration](https://www.mdpi.com/2673-3986/2/3/24) <br />
+  - Dataset:     "full_dataset.tsv.gz" <br />
+  - Location:    [Zenodo](https://zenodo.org/records/5090588) 
+ 
