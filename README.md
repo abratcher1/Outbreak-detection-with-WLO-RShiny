@@ -13,10 +13,16 @@ For this code, a WLO approach is used to identify distinctive terms in each peri
 
 
 ## Code Structure
+To run the code as is, you will need a dataset with the following structure saved as "raw_data" in the "data" folder:
+
+| date   | chief_complaint           | sex          | age          |
+|--------|--------------------------:|-------------:|-------------:|
+| date   | free text	               | “M” or “F”   |	integer      |
+
+
 The included code contains two major steps:  
 
   1. Data cleaning and tokenization (i.e. splitting the text field into separate words) 
   3. Dashboard creation, including calculating WLO for each token
-
 
 
