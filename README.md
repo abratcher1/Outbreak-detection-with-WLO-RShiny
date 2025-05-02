@@ -1,4 +1,4 @@
-# RShiny-WLO-Anomaly-Detection
+# Outbreak Detection with Weighted Log Odds (WLO) RShiny App
 An RShiny dashboard that compares distinctive terms in open text fields across two different time periods. 
 
 **Purpose**: To identify outbreaks or other important trends <br />
@@ -26,5 +26,3 @@ The included code contains two major steps:
      -'Asyndromic Anomaly Detection_cleaning_tokenization' file
   2. Dashboard creation, including calculating WLO for each token <br />
      -'ui' and 'server' files
-
-
