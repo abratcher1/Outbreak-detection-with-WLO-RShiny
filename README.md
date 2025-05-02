@@ -13,7 +13,7 @@ For this code, a WLO approach is used to identify distinctive terms in each peri
 
 
 ## Code Structure
-To run the code as is, you will need a data set with the following structure saved as 'raw_data' in a 'data' folder:
+To run the code as is, you will need a data set saved as 'raw_data' in a 'data' folder with the following structure:
 
 | date   | chief_complaint           | sex          | age          |
 |--------|--------------------------:|-------------:|-------------:|
