@@ -20,9 +20,3 @@ The included code contains two major steps:
 
 
 
-## Example
-The included code is applicable to a dataset on tweets from January 2020 to June 2021 that reference COVID-19 or other related words. <br />
-  - Description: [A Large-Scale COVID-19 Twitter Chatter Dataset for Open Scientific Research—An International Collaboration](https://www.mdpi.com/2673-3986/2/3/24) <br />
-  - Dataset:     "full_dataset.tsv.gz" <br />
-  - Location:    [Zenodo](https://zenodo.org/records/5090588) 
- 
