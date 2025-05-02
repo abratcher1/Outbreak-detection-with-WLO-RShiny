@@ -13,7 +13,7 @@ For this code, a WLO approach is used to identify distinctive terms in each peri
 
 
 ## Code Structure
-To run the code as is, you will need a dataset with the following structure saved as "raw_data" in the "data" folder:
+To run the code as is, you will need a dataset with the following structure saved as 'raw_data' in the 'data' folder:
 
 | date   | chief_complaint           | sex          | age          |
 |--------|--------------------------:|-------------:|-------------:|
@@ -22,7 +22,9 @@ To run the code as is, you will need a dataset with the following structure save
 
 The included code contains two major steps:  
 
-  1. Data cleaning and tokenization (i.e. splitting the text field into separate words) 
-  3. Dashboard creation, including calculating WLO for each token
+  1. Data cleaning and tokenization (i.e. splitting the text field into separate words)
+     -'Asyndromic Anomaly Detection_cleaning_tokenization' file
+  2. Dashboard creation, including calculating WLO for each token
+     -'ui' and 'server' files
 
 
