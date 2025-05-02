@@ -1,0 +1,184 @@
+---
+title: "Anomaly Detection in Ustructured Data: Data Cleaning"
+author: "Anna Bratcher"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## **Background**
+
+The purpose of this analysis is to identify distinctive terms in unstructured data that are potentially indicative of outbreaks comparing a specified period of interest ("post") to a specified baseline period ("pre"). 
+
+
+
+
+```{r setup, include=FALSE}
+
+#Prep
+  library(tidyverse)
+  library(httr)
+  library(jsonlite) 
+  library(lubridate)
+  library(tidylo)
+  library(wesanderson)
+  library(ggsci)
+  library(ggpubr)
+  library(janitor)
+  library(MMWRweek)
+  library(data.table)
+  library(tidytext)
+  library(ggthemes)
+  library(scales)
+  library(quanteda)
+  library(quanteda.textmodels)
+  library(quanteda.textstats)
+  library(quanteda.textplots)
+  library(cowplot)
+  library(ggrepel)
+  library(text2vec)
+  library(hunspell)
+  library(stringi)
+```
+
+
+## **Introduction**
+
+Data require, at minimum, a date field and an open text field that you are monitoring for changes over time. 
+
+Our code is written for data has the following structure: 
+
+| date   | chief_complaint           | sex          | age          |
+|--------|--------------------------:|-------------:|-------------:|
+| date   | free text	               | “M” or “F”   |	integer      |
+
+			 	         
+```{r data pull, echo=FALSE}
+
+
+raw_data <- read_csv('data/raw_data.csv', show_col_types = FALSE)
+
+```
+
+```{r process data, echo = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
+
+df <- raw_data %>%
+  as.data.table() %>%
+  .[, date := as.Date(date, "%m/%d/%Y")] %>%
+  .[, age_group := fcase(between(age, 0, 4), "0-4",
+                         between(age, 5, 11), "5-11",
+                         between(age, 12, 17), "12-17", 
+                         between(age, 18, 44), "18-44", 
+                         between(age, 45, 64), "45-64",
+                         age >= 65, "65+",
+                         default = "Other")]
+
+```
+
+
+
+
+##**Chief complaint cleaning and tokenization** 
+
+Here text is lightly cleaned:  
+  -Removal of punctuation 
+  -Capitalization 
+  -removal of extra white space
+
+This code also translates any ICD-10 codes found in the open text field to English descriptions of the condition. 
+
+**Note:** If there are common abbreviations in your data, consider expanding them here. 
+
+```{r clean chief complaint, echo = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
+
+df <- df %>%
+  mutate(
+    chief_complaint = toupper(chief_complaint),
+    chief_complaint = str_remove_all(chief_complaint, pattern = "[[:punct:]]"),
+    chief_complaint = str_squish(chief_complaint) )
+
+
+# For Electronic Health Record (EHR) data, this code translates International Classification of Disease (ICD)
+# codes into English descriptions. 
+
+dictionary <- read_csv("icd10_crosswalk.csv") %>%
+  mutate(set = factor(set, levels = c("ICD-10 2022", "ICD-10 2019", "ICD-10 2009"))) %>%
+  arrange(code, set) %>%
+  distinct(code, .keep_all = TRUE) %>%
+  select(-set)
+
+#df <-  df %>%
+#        mutate (across(chief_complaint, ~str_replace_all(.x, deframe(dictionary))))
+
+
+fwrite(df, paste0("data/df_processed_data.csv"))
+
+#df <- read_csv("data/df_processed_data.csv")
+
+```
+
+
+
+##**tokenization of chief complaints**
+
+Tokenization: Splitting long strings of text into smaller units (tokens).
+
+This code also removes punctuation, symbols, numbers, and separators. 
+
+```{r tokenization, echo = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
+
+cc_tokens <- as.data.table(df) %>%
+  .[, chief_complaint_parsed := vapply(lapply(str_split(chief_complaint, " "), unique), paste, character(1L), collapse = " ")] %>%
+  corpus(text_field = "chief_complaint") %>%
+  tokens(
+    what = "word",
+    remove_punct = TRUE, 
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE,
+    verbose = TRUE
+  ) 
+
+```
+
+**NOTE**: Additional code could be added here to correct spelling among tokens. 
+
+Once identified, tokens are organized into unigrams and bigrams. This code also keeps factors you would like to sort by later (here, sex and age group)
+
+**Note**: This step can take a bit of time. This is why the output files are saved; so you don't have to run this code every time.  
+
+
+```{r unigrams/bigrams, echo = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
+cc_unigrams <- cc_tokens %>%
+  tokens_ngrams(n = 1) %>%
+  dfm(tolower = FALSE) %>%
+  textstat_frequency(groups = interaction(age_group, date, sex, sep = "_")) %>%
+  as.data.table() %>%
+  .[, c("age_group", "date", "sex") := tstrsplit(group, "_", fixed = TRUE)] %>%
+  as.data.frame() %>%
+  select(
+    unigram = feature, 
+    date,
+    age_group,
+    sex,
+    n = frequency
+  ) 
+
+fwrite(cc_unigrams, paste0("data/cc_unigrams.csv"))
+
+cc_bigrams <- cc_tokens %>%
+  tokens_ngrams(n = 2, concatenator = " ") %>%
+  dfm(tolower = FALSE) %>%
+  textstat_frequency(groups = interaction(age_group, date, sex, sep = "_")) %>%
+  as.data.table() %>%
+  .[, c("age_group", "date", "sex") := tstrsplit(group, "_", fixed = TRUE)] %>%
+  .[, .(bigram = feature, date = date, age_group = age_group, sex = sex, n = frequency)] %>%
+  .[, c("word1", "word2") := tstrsplit(bigram, " ", fixed = TRUE)] %>%
+  .[, bigram := fifelse(word1 < word2, paste(word1, word2), paste(word2, word1))] %>%
+  .[, .(n = sum(n)), by = c("bigram", "date", "age_group", "sex")] %>%
+  as.data.frame()  
+
+fwrite(cc_bigrams, paste0("data/cc_bigrams.csv"))
+
+```
+
+
