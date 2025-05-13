@@ -24,8 +24,8 @@ function(input, output) {
     cc_unigrams$period <- ifelse(cc_unigrams$date >= input$postdateRange[1] & cc_unigrams$date <= input$postdateRange[2], "post", cc_unigrams$period)
     
     
-    cc_unigrams <- subset(cc_unigrams, sex == input$checkbox_sex)
-    cc_unigrams <- subset(cc_unigrams, age_group == input$checkbox_age)
+    cc_unigrams <- subset(cc_unigrams, verified == input$checkbox_ver)
+    cc_unigrams <- subset(cc_unigrams, followers == input$checkbox_followers)
     
     
      unigrams_wlo <-  cc_unigrams %>%
@@ -78,8 +78,8 @@ function(input, output) {
       cc_bigrams$period <- ifelse(cc_bigrams$date >= input$predateRange[1] & cc_bigrams$date <= input$predateRange[2], "pre", "NA")
       cc_bigrams$period <- ifelse(cc_bigrams$date >= input$postdateRange[1] & cc_bigrams$date <= input$postdateRange[2], "post", cc_bigrams$period)
       
-      cc_bigrams <- subset(cc_bigrams, sex == input$checkbox_sex)
-      cc_bigrams <- subset(cc_bigrams, age_group == input$checkbox_age)
+      cc_bigrams <- subset(cc_bigrams, verified == input$checkbox_ver)
+      cc_bigrams <- subset(cc_bigrams, followers == input$checkbox_followers)
       
       
     bigrams_wlo <-  cc_bigrams %>%
@@ -94,7 +94,7 @@ function(input, output) {
       mutate(
         period = factor(period, levels = c("pre", "post")), 
         ngram_original = bigram, 
-        ngram = reorder_within(bigram, log_odds_weighted, period)
+       ngram = reorder_within(bigram, log_odds_weighted, period)
       ) %>%
       slice_max(log_odds_weighted, n = 10) %>%
       ungroup() 
@@ -109,7 +109,7 @@ function(input, output) {
       scale_x_reordered() + 
       scale_y_continuous(expand = expansion(mult = c(0, 0.1))) + 
       labs(
-        title = " ", 
+       title = " ", 
         x = NULL, 
         y = "Log odds ratio, weighted by Informative Dirichlet prior"
       ) + 
