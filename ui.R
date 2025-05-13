@@ -15,27 +15,27 @@ fluidPage(
                     
                     
                     checkboxGroupInput( 
-                      "checkbox_ver", 
-                      "User Verification", 
+                      "checkbox_sex", 
+                      "Sex", 
                       c( 
-                        "Verified"    = "Verified", 
-                        "Not Verified"  = "Not Verified"
+                        "Male"    = "M", 
+                        "Female"  = "F"
                       ),
-                      selected = c("Verified", "Not Verified")
+                      selected = c("F", "M")
                     ), 
                     
                 
                     checkboxGroupInput( 
-                      "checkbox_followers", 
-                      "Number of Followers", 
-                      c(  "0-249" = "0-249",
-                          "250-999" = "250-999", 
-                          "1,000-4,999" = "1,000-4,999", 
-                          "5,000-9,999" = "5,000-9,999", 
-                          "10,000-999,999" = "10,000-999,999", 
-                          "1,000,000+" = "1,000,000" 
+                      "checkbox_age", 
+                      "Age Group", 
+                      c(  "0-4 years" = "0-4",
+                          "5-11 years" = "5-11", 
+                          "12-17 years" = "12-17", 
+                          "18-44 years" = "18-44", 
+                          "45-64 years" = "45-64", 
+                          "65+ years" = "65+" 
                       ),
-                      selected = c("0-249", "250-999", "1,000-4,999", "5,000-9,999","10,000-999,999", "1,000,000")
+                      selected = c("0-4", "5-11", "12-17", "18-44","45-64", "65+")
                     ), 
                     ),
                       

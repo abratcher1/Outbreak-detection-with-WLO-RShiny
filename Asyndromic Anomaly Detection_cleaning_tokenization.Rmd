@@ -38,7 +38,6 @@ The purpose of this analysis is to identify distinctive terms in unstructured da
   library(text2vec)
   library(hunspell)
   library(stringi)
-  library(qdapRegex)
 ```
 
 
@@ -46,13 +45,11 @@ The purpose of this analysis is to identify distinctive terms in unstructured da
 
 Data require, at minimum, a date field and an open text field that you are monitoring for changes over time. 
 
-This example is written for the Covid Vaccine Tweets available at https://www.kaggle.com/datasets/kaushiksuresh147/covidvaccine-tweets. 
+Our code is written for data has the following structure: 
 
-We subsetted the columns so that the data has the following structure: 
-
-| user followers   | user_verified       | date         |text                      |
-|------------------|--------------------:|-------------:|-------------------------:|
-| integer          | “TRUE” or “FALSE”   | date         | free text	               |
+| date   | chief_complaint           | sex          | age          |
+|--------|--------------------------:|-------------:|-------------:|
+| date   | free text	               | “M” or “F”   |	integer      |
 
 			 	         
 ```{r data pull, echo=FALSE}
@@ -67,12 +64,12 @@ raw_data <- read_csv('data/raw_data.csv', show_col_types = FALSE)
 df <- raw_data %>%
   as.data.table() %>%
   .[, date := as.Date(date, "%m/%d/%Y")] %>%
-  .[, followers := fcase(between(user_followers, 0, 249), "0-249",
-                         between(user_followers, 250, 999), "250-999",
-                         between(user_followers, 1000, 4999), "1,000-4,999", 
-                         between(user_followers, 5000, 9999), "5,000-9,999", 
-                         between(user_followers, 10000, 999999), "10,000-999,999",
-                         user_followers >= 1000000, "1,000,000+",
+  .[, age_group := fcase(between(age, 0, 4), "0-4",
+                         between(age, 5, 11), "5-11",
+                         between(age, 12, 17), "12-17", 
+                         between(age, 18, 44), "18-44", 
+                         between(age, 45, 64), "45-64",
+                         age >= 65, "65+",
                          default = "Other")]
 
 ```
@@ -87,27 +84,27 @@ Here text is lightly cleaned:
   -Capitalization 
   -removal of extra white space
 
+This code also translates any ICD-10 codes found in the open text field to English descriptions of the condition. 
 
+**Note:** If there are common abbreviations in your data, consider expanding them here. 
 
-```{r clean tweets, echo = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
+```{r clean chief complaint, echo = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 
 df <- df %>%
   mutate(
-    text = toupper(text),
-    text = str_remove_all(text, pattern = "[[:punct:]]"),
-    text = str_squish(text),
-    text = rm_nchar_words(text, "1,2")) #this line removes words of 1 or 2 characters. Assumes these are non-informative
+    chief_complaint = toupper(chief_complaint),
+    chief_complaint = str_remove_all(chief_complaint, pattern = "[[:punct:]]"),
+    chief_complaint = str_squish(chief_complaint) )
 
-df$verified <- ifelse(df$user_verified == TRUE, "Verified", "Not Verified")
 
 # For Electronic Health Record (EHR) data, this code translates International Classification of Disease (ICD)
 # codes into English descriptions. 
 
-#dictionary <- read_csv("icd10_crosswalk.csv") %>%
-#  mutate(set = factor(set, levels = c("ICD-10 2022", "ICD-10 2019", "ICD-10 2009"))) %>%
-#  arrange(code, set) %>%
-#  distinct(code, .keep_all = TRUE) %>%
-#  select(-set)
+dictionary <- read_csv("icd10_crosswalk.csv") %>%
+  mutate(set = factor(set, levels = c("ICD-10 2022", "ICD-10 2019", "ICD-10 2009"))) %>%
+  arrange(code, set) %>%
+  distinct(code, .keep_all = TRUE) %>%
+  select(-set)
 
 #df <-  df %>%
 #        mutate (across(chief_complaint, ~str_replace_all(.x, deframe(dictionary))))
@@ -130,8 +127,8 @@ This code also removes punctuation, symbols, numbers, and separators.
 ```{r tokenization, echo = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 
 cc_tokens <- as.data.table(df) %>%
-  .[, text := vapply(lapply(str_split(text, " "), unique), paste, character(1L), collapse = " ")] %>%
-  corpus(text_field = "text") %>%
+  .[, chief_complaint_parsed := vapply(lapply(str_split(chief_complaint, " "), unique), paste, character(1L), collapse = " ")] %>%
+  corpus(text_field = "chief_complaint") %>%
   tokens(
     what = "word",
     remove_punct = TRUE, 
@@ -139,15 +136,13 @@ cc_tokens <- as.data.table(df) %>%
     remove_numbers = TRUE,
     remove_separators = TRUE,
     verbose = TRUE
-  ) %>%
-  tokens_select(pattern = c("THE", "AND", "FOR", "WITH"), selection = "remove") #This line removes any non-informative words
-
+  ) 
 
 ```
 
 **NOTE**: Additional code could be added here to correct spelling among tokens. 
 
-Once identified, tokens are organized into unigrams and bigrams. This code also keeps factors you would like to sort by later (here, number of followers for the user and if the user is verified on Twitter)
+Once identified, tokens are organized into unigrams and bigrams. This code also keeps factors you would like to sort by later (here, sex and age group)
 
 **Note**: This step can take a bit of time. This is why the output files are saved; so you don't have to run this code every time.  
 
@@ -156,33 +151,30 @@ Once identified, tokens are organized into unigrams and bigrams. This code also 
 cc_unigrams <- cc_tokens %>%
   tokens_ngrams(n = 1) %>%
   dfm(tolower = FALSE) %>%
-  textstat_frequency(groups = interaction(followers, date, verified, sep = "_")) %>%
+  textstat_frequency(groups = interaction(age_group, date, sex, sep = "_")) %>%
   as.data.table() %>%
-  .[, c("followers", "date", "verified") := tstrsplit(group, "_", fixed = TRUE)] %>%
+  .[, c("age_group", "date", "sex") := tstrsplit(group, "_", fixed = TRUE)] %>%
   as.data.frame() %>%
   select(
     unigram = feature, 
     date,
-    followers,
-    verified,
+    age_group,
+    sex,
     n = frequency
   ) 
 
 fwrite(cc_unigrams, paste0("data/cc_unigrams.csv"))
-```
 
-
-```{r}
 cc_bigrams <- cc_tokens %>%
   tokens_ngrams(n = 2, concatenator = " ") %>%
   dfm(tolower = FALSE) %>%
-  textstat_frequency(groups = interaction(followers, date, verified, sep = "_")) %>%
+  textstat_frequency(groups = interaction(age_group, date, sex, sep = "_")) %>%
   as.data.table() %>%
-  .[, c("followers", "date", "verified") := tstrsplit(group, "_", fixed = TRUE)] %>%
-  .[, .(bigram = feature, date = date, followers = followers, verified = verified, n = frequency)] %>%
-# .[, c("word1", "word2") := tstrsplit(bigram, " ", fixed = TRUE)] %>%             
-# .[, bigram := fifelse(word1 < word2, paste(word1, word2), paste(word2, word1))] %>%
-  .[, .(n = sum(n)), by = c("bigram", "date", "followers", "verified")] %>%
+  .[, c("age_group", "date", "sex") := tstrsplit(group, "_", fixed = TRUE)] %>%
+  .[, .(bigram = feature, date = date, age_group = age_group, sex = sex, n = frequency)] %>%
+  .[, c("word1", "word2") := tstrsplit(bigram, " ", fixed = TRUE)] %>%
+  .[, bigram := fifelse(word1 < word2, paste(word1, word2), paste(word2, word1))] %>%
+  .[, .(n = sum(n)), by = c("bigram", "date", "age_group", "sex")] %>%
   as.data.frame()  
 
 fwrite(cc_bigrams, paste0("data/cc_bigrams.csv"))
