@@ -25,3 +25,15 @@ The included code contains two major steps:
      -'Asyndromic Anomaly Detection_cleaning_tokenization' file
   2. Dashboard creation, including calculating WLO for each token <br />
      -'ui' and 'server' files
+
+### Example Code
+
+A slightly modified example is provided in the /example file. 
+
+This example is written for the Covid Vaccine Tweets available at https://www.kaggle.com/datasets/kaushiksuresh147/covidvaccine-tweets. 
+
+We subsetted the columns so that the data has the following structure: 
+
+| user followers   | user_verified       | date         |text                      |
+|------------------|--------------------:|-------------:|-------------------------:|
+| integer          | “TRUE” or “FALSE”   | date         | free text	               |
