@@ -19,6 +19,8 @@ To run the code as is, you will need a data set saved as 'raw_data' in a 'data' 
 | date   | free text	               | “M” or “F”   |	integer      |
 
 
+*Note*: This code was developed using Chief Complaints from the NSSP system: https://www.cdc.gov/nssp/index.html
+
 The included code contains two major steps:  
 
   1. Data cleaning and tokenization (i.e. splitting the text field into separate words) <br />
